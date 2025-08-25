@@ -1,117 +1,136 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Mapeamento de elementos do DOM
-    var elements = {
-        colorPads: document.querySelectorAll('.color-pad'),
-        startButton: document.getElementById('start-btn'),
-        levelDisplay: document.getElementById('level'),
-        colorMap: {
-            green: document.getElementById('green'),
-            red: document.getElementById('red'),
-            yellow: document.getElementById('yellow'),
-            blue: document.getElementById('blue')
-        }
-    };
+// =============================================
+// CÉREBRO FUNCIONAL (LÓGICA PURA)
+// =============================================
+//funçao que cria e retorna o estado inicial do jogo
+// retorno objeto com propriedades: nivel, array vazio para sequencia, array vazio para as jogadas
+//flag booleana 1, indica a vez do jogador, flag boolreana 2 zera e prepara o jogo
+const createInitialState = () => ({
+  level: 0,
+  computerSequence: [],
+  playerSequence: [],
+  isPlayerTurn: false,
+  isGameOver: true,
+});
+//recebe como parametro a sequencia atual do computador
+//array cores do jogo
+
+const nextSequenceStep = (sequence) => {
+  const colors = ['green', 'red', 'yellow', 'blue'];
+  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+  return [...sequence, randomColor];
+};
+//recebe o estado atual do jogo como párametro
+const checkPlayerMove = (state) => {
+  const { computerSequence, playerSequence } = state;
+  const lastPlayerMoveIndex = playerSequence.length - 1;
+
+  if (playerSequence[lastPlayerMoveIndex] !== computerSequence[lastPlayerMoveIndex]) {
+    return 'incorrect';
+  }
+
+  if (playerSequence.length === computerSequence.length) {
+    return 'complete';
+  }
+
+  return 'correct';
+};
+// =============================================
+// RESTO DO JOGO com algumas mudanças
+// =============================================
 
     // Variáveis de estado do jogo
-    var sequence = [];
-    var playerSequence = [];
     var level = 0;
     var isPlayerTurn = false;
 
-    var colors = ['green', 'red', 'yellow', 'blue'];
+// Agora o estado é criado pelo cérebro funcional
+var gameState = createInitialState();
 
-    /**
-     * Inicia um novo jogo ou o próximo nível.
-     */
-    var nextLevel = function() {
-        level++;
-        elements.levelDisplay.textContent = level;
-        playerSequence = [];
-        isPlayerTurn = false;
-        elements.startButton.disabled = true;
+// Elementos da interface
+var botaoIniciar = document.getElementById("start-btn");
+var exibicaoNivel = document.getElementById("level");
+var botoesCores = document.querySelectorAll("color-pad");
 
-        // Adiciona uma nova cor à sequência
-        var randomColor = colors[Math.floor(Math.random() * colors.length)];
-        sequence.push(randomColor);
+  
+    // Iniciar jogo
+var iniciarJogo =function () {
+  gameState = createInitialState(); // reinicia estado
+  gameState.isGameOver = false;
+  nivel = 0;
+  exibicaoNivel.textContent = nivel;
+  proximoNivel();
+}
+// Próximo nível
+var proximoNivel=function () {
+  nivel++;
+  exibicaoNivel.textContent = nivel;
 
-        playSequence();
-    };
+  gameState.level = nivel;
+  gameState.playerSequence = [];
+  gameState.isPlayerTurn = false;
 
-    /**
-     * "Acende" um botão de cor.
-     * @param {string} color - A cor a ser ativada.
-     */
-    var activatePad = function(color) {
-        var pad = elements.colorMap[color];
-        pad.classList.add('lit');
-        setTimeout(function() {
-            pad.classList.remove('lit');
-        }, 500); // Duração que a cor fica acesa
-    };
+       // gera nova cor na sequência
+  gameState.computerSequence = nextSequenceStep(gameState.computerSequence);
 
-    /**
-     * Reproduz a sequência de cores atual para o jogador.
-     */
-    var playSequence = function() {
-        var i = 0;
-        var interval = setInterval(function() {
-            if (i < sequence.length) {
-                activatePad(sequence[i]);
-                i++;
-            } else {
-                clearInterval(interval);
-                isPlayerTurn = true; // Agora é a vez do jogador
-            }
-        }, 1000); // Intervalo entre as cores
-    };
+  // mostra a sequência
+  mostrarSequencia();
+}
 
-    /**
-     * Lida com o clique do jogador em um botão de cor.
-     * @param {Event} event - O evento de clique.
-     */
-    var handlePlayerClick = function(event) {
-        if (!isPlayerTurn) return;
+     // Mostrar a sequência para o jogador
+var mostrarSequencia = function () {
+  let i = 0;
+  var intervalo = setInterval(() => {
+    if (i < gameState.computerSequence.length) {
+      piscarCor(gameState.computerSequence[i]);
+      i++;
+    } else {
+      clearInterval(intervalo);
+      gameState.isPlayerTurn = true;
+    }
+  }, 1000);
+}
+    // Piscar cor (efeito visual)
+var piscarCor= function (color) {
+  var botao = document.getElementById(color);
+  botao.classList.add("lit");
+  setTimeout(() => {
+    botao.classList.remove("lit");
+  }, 500);
+}
+// Jogador clica em uma cor
+var cliqueJogador = function (event) {
+  if (!gameState.isPlayerTurn) return;
 
-        var clickedColor = event.target.id;
-        playerSequence.push(clickedColor);
-        activatePad(clickedColor);
+  var corEscolhida = event.target.id;
+  piscarCor(corEscolhida);
 
-        // Verifica se o clique está correto
-        var lastIndex = playerSequence.length - 1;
-        if (playerSequence[lastIndex] !== sequence[lastIndex]) {
-            gameOver();
-            return;
-        }
+  // adiciona no estado funcional
+  gameState.playerSequence = [...gameState.playerSequence, corEscolhida];
 
-        // Se o jogador completou a sequência, avança para o próximo nível
-        if (playerSequence.length === sequence.length) {
-            isPlayerTurn = false;
-            setTimeout(nextLevel, 1000);
-        }
-    };
+  const resultado = checkPlayerMove(gameState);
 
-    /**
-     * Inicia o jogo a partir do zero.
-     */
-    var startGame = function() {
-        sequence = [];
-        level = 0;
-        nextLevel();
-    };
+  if (resultado === "incorrect") {
+    gameOver();
+    return;
+  }
 
-    /**
-     * Finaliza o jogo e reinicia o estado.
-     */
-    var gameOver = function() {
-        alert('Fim de jogo! 😢 Você alcançou o nível ' + level + '.');
-        isPlayerTurn = false;
-        elements.startButton.disabled = false;
-        elements.levelDisplay.textContent = '0';
-    };
+  if (resultado === "complete") {
+    gameState.isPlayerTurn = false;
+    setTimeout(proximoNivel, 1000);
+  }
+}
 
-    // Adiciona os event listeners
-    elements.startButton.addEventListener('click', startGame);
-    elements.colorPads.forEach(function(pad) {
-        pad.addEventListener('click', handlePlayerClick);
-    });
+// Game Over
+ var gameOver = function() {
+  alert(`Fim de jogo! Você alcançou o nível ${nivel}`);
+  gameState.isGameOver = true;
+  isPlayerTurn = false;
+  botaoIniciar.disabled = false;
+  exibicaoNivel.textContent = "0";
+}
+
+// Eventos
+botaoIniciar.addEventListener("click", iniciarJogo);
+botoesCores.forEach(botao => {
+  botao.addEventListener("click", cliqueJogador);
 });
+     
