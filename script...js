@@ -60,34 +60,21 @@ var iniciarJogo =function () {
   proximoNivel();
 }
 // Próximo nível
-var proximoNivel=function () {
-  nivel++;
-  exibicaoNivel.textContent = nivel;
-
-  gameState.level = nivel;
-  gameState.playerSequence = [];
-  gameState.isPlayerTurn = false;
-
-       // gera nova cor na sequência
-  gameState.computerSequence = nextSequenceStep(gameState.computerSequence);
-
-  // mostra a sequência
-  mostrarSequencia();
-}
+case 'START_COMPUTER_TURN':
+    return {
+        ...state,
+        level: state.level + 1,
+        playerSequence: [],
+        computerSequence: nextSequenceStep(state.computerSequence),
+        isPlayerTurn: false,
+    };
 
      // Mostrar a sequência para o jogador
-var mostrarSequencia = function () {
-  let i = 0;
-  var intervalo = setInterval(() => {
-    if (i < gameState.computerSequence.length) {
-      piscarCor(gameState.computerSequence[i]);
-      i++;
-    } else {
-      clearInterval(intervalo);
-      gameState.isPlayerTurn = true;
+const playSequence = async (sequence) => {
+    for (const color of sequence) {
+        await flashColorPad(color);
     }
-  }, 1000);
-}
+};
     // Piscar cor (efeito visual)
 var piscarCor= function (color) {
   var botao = document.getElementById(color);
@@ -97,26 +84,13 @@ var piscarCor= function (color) {
   }, 500);
 }
 // Jogador clica em uma cor
-var cliqueJogador = function (event) {
-  if (!gameState.isPlayerTurn) return;
-
-  var corEscolhida = event.target.id;
-  piscarCor(corEscolhida);
-
-  // adiciona no estado funcional
-  gameState.playerSequence = [...gameState.playerSequence, corEscolhida];
-
-  const resultado = checkPlayerMove(gameState);
-
-  if (resultado === "incorrect") {
-    gameOver();
-    return;
-  }
-
-  if (resultado === "complete") {
-    gameState.isPlayerTurn = false;
-    setTimeout(proximoNivel, 1000);
-  }
+case 'PLAYER_CLICK': {
+    const newPlayerSequence = [...state.playerSequence, action.payload.color];
+    const moveResult = checkPlayerMove(state.computerSequence, newPlayerSequence);
+    
+    if (moveResult === 'incorrect') return { ...state, isGameOver: true, ... };
+    if (moveResult === 'complete') return { ...state, isPlayerTurn: false, ... };
+    return { ...state, playerSequence: newPlayerSequence };
 }
 
 // Game Over
