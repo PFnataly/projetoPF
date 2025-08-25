@@ -4,36 +4,38 @@
 //funçao que cria e retorna o estado inicial do jogo
 // retorno objeto com propriedades: nivel, array vazio para sequencia, array vazio para as jogadas
 //flag booleana 1, indica a vez do jogador, flag boolreana 2 zera e prepara o jogo
-const createInitialState = () => ({
-  level: 0,
-  computerSequence: [],
-  playerSequence: [],
-  isPlayerTurn: false,
-  isGameOver: true,
+// Cria e retorna o estado inicial do jogo.
+const criarEstadoInicial = () => ({
+    nivel: 0,
+    sequenciaComputador: [],
+    sequenciaJogador: [],
+    turnoDoJogador: false,
+    fimDeJogo: true,
 });
-//recebe como parametro a sequencia atual do computador
-//array cores do jogo
 
-const nextSequenceStep = (sequence) => {
-  const colors = ['green', 'red', 'yellow', 'blue'];
-  const randomColor = colors[Math.floor(Math.random() * colors.length)];
-  return [...sequence, randomColor];
+
+// Calcula o próximo passo da sequência do computador.
+const proximoPassoDaSequencia = (sequencia) => {
+    const cores = ['green', 'red', 'yellow', 'blue'];
+    const corAleatoria = cores[Math.floor(Math.random() * cores.length)];
+    return [...sequencia, corAleatoria];
 };
+
 //recebe o estado atual do jogo como párametro
-const checkPlayerMove = (state) => {
-  const { computerSequence, playerSequence } = state;
-  const lastPlayerMoveIndex = playerSequence.length - 1;
+// Verifica se a última jogada do jogador foi correta.
+const verificarJogada = (estado) => {
+    const { sequenciaComputador, sequenciaJogador } = estado;
+    const indiceUltimaJogada = sequenciaJogador.length - 1;
 
-  if (playerSequence[lastPlayerMoveIndex] !== computerSequence[lastPlayerMoveIndex]) {
-    return 'incorrect';
-  }
-
-  if (playerSequence.length === computerSequence.length) {
-    return 'complete';
-  }
-
-  return 'correct';
+    if (sequenciaJogador[indiceUltimaJogada] !== sequenciaComputador[indiceUltimaJogada]) {
+        return 'incorreta';
+    }
+    if (sequenciaJogador.length === sequenciaComputador.length) {
+        return 'completa';
+    }
+    return 'correta';
 };
+
 // =============================================
 // RESTO DO JOGO com algumas mudanças
 // =============================================
@@ -44,9 +46,13 @@ const checkPlayerMove = (state) => {
 var gameState = createInitialState();
 
 // Elementos da interface
-var botaoIniciar = document.getElementById("start-btn");
-var exibicaoNivel = document.getElementById("level");
-var botoesCores = document.querySelectorAll("color-pad");
+// Pega os elementos da tela uma única vez.
+const elementos = {
+    botaoIniciar: document.getElementById('start-btn'),
+    exibicaoNivel: document.getElementById('level'),
+    painelBotoes: document.querySelector('.genius-board'),
+    botoesCores: document.querySelectorAll('.color-pad'),
+};
 
   
 
