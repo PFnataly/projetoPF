@@ -60,7 +60,45 @@ const jogoReducer = (estado, acao) => {
         default:
             return estado;
     }
-};
+}
+
+
+const botoesDeCores = {
+    green: document.getElementById('green'),
+    red: document.getElementById('red'),
+    yellow: document.getElementById('yellow'),
+    blue: document.getElementById('blue')
+}
+
+const botaoIniciar = document.getElementById('start-btn')
+const exibicaoNivel = document.getElementById('level')
+
+
+const esperar = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
+const piscarBotaoDeCor = async (cor) => {
+    const botao = botoesDeCores[cor]
+    botao.classList.add('lit')
+    await esperar(400)
+    botao.classList.remove('lit')
+    await esperar(200)
+}
+
+const tocarSequencia = async (sequencia) => {
+    for (const cor of sequencia) {
+        await piscarBotaoDeCor(cor)
+    }
+}
+
+const atualizarInterface = (estado) => {
+    exibicaoNivel.textContent = estado.nivel
+    botaoIniciar.disabled = !estado.fimDeJogo
+    const container = document.querySelector('.genius-board')
+    container.style.pointerEvents = estado.turnoDoJogador ? 'auto' : 'none'
+    if (estado.fimDeJogo && estado.nivel > 0) {
+        exibicaoNivel.textContent = `Fim! Nível ${estado.nivel}`
+    }
+}
 
 
 
