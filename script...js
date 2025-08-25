@@ -36,43 +36,31 @@ const verificarJogada = (estado) => {
     return 'correta';
 };
 
-// =============================================
-// RESTO DO JOGO com algumas mudanças
-// =============================================
-
-
-
-// Agora o estado é criado pelo cérebro funcional
-var gameState = createInitialState();
-
-// Elementos da interface
-// Pega os elementos da tela uma única vez.
-const elementos = {
-    botaoIniciar: document.getElementById('start-btn'),
-    exibicaoNivel: document.getElementById('level'),
-    painelBotoes: document.querySelector('.genius-board'),
-    botoesCores: document.querySelectorAll('.color-pad'),
-};
-
-  
-
-// Próximo nível
-
-
-     // Mostrar a sequência para o jogador
-const playSequence = async (sequence) => {
-    for (const color of sequence) {
-        await flashColorPad(color);
+const jogoReducer = (estado, acao) => {
+    switch (acao.tipo) {
+        case 'INICIAR_JOGO':
+            return { ...criarEstadoInicial(), fimDeJogo: false };
+        case 'TURNO_COMPUTADOR':
+            return {
+                ...estado,
+                nivel: estado.nivel + 1,
+                sequenciaJogador: [],
+                sequenciaComputador: proximoPassoDaSequencia(estado.sequenciaComputador),
+                turnoDoJogador: false,
+            };
+        case 'TURNO_JOGADOR':
+            return { ...estado, turnoDoJogador: true };
+        case 'JOGADA_JOGADOR': {
+            const novaSequenciaJogador = [...estado.sequenciaJogador, acao.payload.cor];
+            const resultado = verificarJogada(estado.sequenciaComputador, novaSequenciaJogador);
+            if (resultado === 'incorreta') return { ...estado, sequenciaJogador: novaSequenciaJogador, fimDeJogo: true, turnoDoJogador: false };
+            if (resultado === 'completa') return { ...estado, sequenciaJogador: novaSequenciaJogador, turnoDoJogador: false };
+            return { ...estado, sequenciaJogador: novaSequenciaJogador };
+        }
+        default:
+            return estado;
     }
 };
-    // Piscar cor (efeito visual)
-var piscarCor= function (color) {
-  var botao = document.getElementById(color);
-  botao.classList.add("lit");
-  setTimeout(() => {
-    botao.classList.remove("lit");
-  }, 500);
-}
 
 
 
