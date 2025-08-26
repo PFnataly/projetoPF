@@ -165,3 +165,15 @@ const loopDoJogo = async (estado) => {
     const estadoJogador = jogoReducer(estadoComputador, { tipo: 'TURNO_JOGADOR' })
     loopTurnoJogador(estadoJogador)
 };
+//Altera o estado inicial para um estado de jogo iniciado
+//atualizarInterface(criarEstadoInicial()); monta o estado inicial, chamando criarEstadoinicial
+//botaoIniciar.addEventListener('click', () quando o botao de iniciar for clicado, essa funçao anonima ira ser executada
+//dentrp do click do botao, const estado inicial cria novamente um estado inicial chamando o jogoreduce, passando a ação
+
+const configuracaoInicial = () => {
+    atualizarInterface(criarEstadoInicial());
+    botaoIniciar.addEventListener('click', () => {
+        const estadoInicial = jogoReducer(criarEstadoInicial(), { tipo: 'INICIAR_JOGO' });
+        loopDoJogo(estadoInicial);
+    });
+};
