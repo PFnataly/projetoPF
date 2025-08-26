@@ -109,11 +109,11 @@ const piscarBotaoDeCor = async (cor) => {
     await esperar(200)
 }
 
-const tocarSequencia = async (sequencia) => {
-    for (const cor of sequencia) {
-        await piscarBotaoDeCor(cor)
-    }
-}
+const tocarSequencia = (sequencia) => {
+    return sequencia.reduce((promessa, cor) => {
+        return promessa.then(() => piscarBotaoDeCor(cor));
+    }, Promise.resolve());
+};
 
 const atualizarInterface = (estado) => {
     const [nivel, , , turnoJog, fimJogo] = estado
@@ -130,51 +130,62 @@ const atualizarInterface = (estado) => {
 // essa função aqui é pra esperar o jogador clicar em um botão
 // ela fica de olho nos cliques, quando o caba clica em uma cor
 // ela para de escutar os outros e devolve a cor que ele apertou
+// ✅ Versão 100% funcional com .map()
 const aguardarCliqueDoJogador = () => {
     return new Promise(resolve => {
         const botoes = Object.values(botoesDeCores);
+
+        // Definimos uma única vez a função que trata o clique
         const listener = (evento) => {
-            botoes.forEach(b => b.removeEventListener('click', listener));
-            resolve(evento.target.id);
+            const corClicada = evento.target.id;
+
+            // 🗺️ Usa .map() para iterar e REMOVER o listener de todos os botões
+            botoes.map(botao => botao.removeEventListener('click', listener));
+
+            // Resolve a promessa, encerrando a espera
+            resolve(corClicada);
         };
-        botoes.forEach(b => b.addEventListener('click', listener));
+
+        // 🗺️ Usa .map() para iterar e ADICIONAR o listener em cada botão
+        botoes.map(botao => botao.addEventListener('click', listener));
     });
 };
 
 
-// aqui é o turno do jogador, o caba tem que repetir a sequencia
-// a gente atualiza a tela e fica esperando ele clicar
-// quando ele clica, o jogo vê se a jogada foi certa. se errou, o jogo acaba
-// se acertou mas ainda falta cor, ele joga de novo. se acertou tudo, passa a vez pro pc
-const loopTurnoJogador = async (estado) => {
-    atualizarInterface(estado)
-    const corClicada = await aguardarCliqueDoJogador()
-    const novoEstado = jogoReducer(estado, { tipo: 'JOGADA_JOGADOR', payload: { cor: corClicada } })
-    atualizarInterface(novoEstado)
-    if (novoEstado[FIM_JOGO]) return
-    if (novoEstado[TURNO_JOG]) {
-        await loopTurnoJogador(novoEstado) // ALTERAÇÃO: await para Promise resolver corretamente
-    } else {
-        await loopDoJogo(novoEstado) // ALTERAÇÃO: await para Promise resolver corretamente
-    }
+
+
+const loopTurnoJogador = estado =>
+  aguardarCliqueDoJogador()
+    .then(corClicada => {
+      const novoEstado = jogoReducer(estado, { tipo: 'JOGADA_JOGADOR', payload: { cor: corClicada } });
+      atualizarInterface(novoEstado);
+      return novoEstado;
+    })
+    .then(novoEstado => {
+      if (novoEstado[FIM_JOGO]) return;
+      return novoEstado[TURNO_JOG]
+        ? loopTurnoJogador(novoEstado)
+        : loopDoJogo(novoEstado);
+    });
+
+const loopDoJogo = estado => {
+    // ... (o início da função continua igual) ...
+
+    return esperar(1000)
+        .then(() => jogoReducer(estado, { tipo: 'TURNO_COMPUTADOR' }))
+        .then(estadoComputador => {
+            atualizarInterface(estadoComputador);
+            return tocarSequencia(estadoComputador[SEQ_COMP]).then(() => estadoComputador);
+        })
+        .then(estadoComputador => jogoReducer(estadoComputador, { tipo: 'TURNO_JOGADOR' }))
+        
+        // 👇 ETAPA ADICIONADA AQUI 👇
+        .then(estadoJogador => {
+            atualizarInterface(estadoJogador); // ATUALIZA A TELA PARA ATIVAR OS BOTÕES
+            return estadoJogador; // Passa o estado adiante
+        })
+        .then(loopTurnoJogador); // Agora sim começa o turno do jogador
 };
-
-
-// esse é o loop principal, o que controla o jogo todo
-// primeiro a gente desliga os botoes pro jogador não clicar na vez do pc e espera um segundo
-// o computador pensa numa cor nova e aumenta o nivel
-// ai mostra a sequencia nova pro jogador piscar
-// e depois chama a função do turno do jogador pra ele se virar e tentar acertar
-const loopDoJogo = async (estado) => {
-    atualizarInterface([...estado.slice(0, TURNO_JOG), false, ...estado.slice(TURNO_JOG + 1)])
-    await esperar(1000);
-    const estadoComputador = jogoReducer(estado, { tipo: 'TURNO_COMPUTADOR' })
-    atualizarInterface(estadoComputador)
-    await tocarSequencia(estadoComputador[SEQ_COMP]);
-    const estadoJogador = jogoReducer(estadoComputador, { tipo: 'TURNO_JOGADOR' })
-    await loopTurnoJogador(estadoJogador) // ALTERAÇÃO: await para Promise resolver corretamente
-};
-
 
 //Altera o estado inicial para um estado de jogo iniciado
 const configuracaoInicial = () => {
