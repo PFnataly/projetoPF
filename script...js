@@ -29,26 +29,24 @@ const proximoPassoDaSequencia = sequencia => { // Essa daqui é uma função arr
     // array, que garante a imutabilidade
 }
 
-// recebe o estado atual do jogo como parâmetro
+// recebe os arrays do jogo como parâmetros
 // verifica se a última jogada do jogador foi correta
-const verificarJogada = estado => {
-  const { sequenciaComputador, sequenciaJogador } = estado //  Essa parte aqui é basicamente pra pegar duas características do objeto estado pra evitar ter de repetir: estado.sequenciacomputador, por exemplo
-    
+const verificarJogada = (sequenciaComputador, sequenciaJogador) => { // ALTERAÇÃO: agora recebe dois arrays
   const indiceUltimaJogada = sequenciaJogador.length - 1 // Aqui, basicamente, temos a sequencia que o jogador já clicou aliado ao -1, pois os arrays começam em 0
 
-  if sequenciaJogador[indiceUltimaJogada] !== sequenciaComputador[indiceUltimaJogada] {
-    return 'incorreta'
+  if (sequenciaJogador[indiceUltimaJogada] !== sequenciaComputador[indiceUltimaJogada]) {
+    return 'incorreta' // Temos aqui o teste para o 'gameover'. Essa condição compara  a cor que o jogador acabou de clicar com a da sequência do computador, se for diferente 'bye bye'
   }
-    // Temos aqui o teste para o 'gameover'. Essa condição compara  a cor que o jogador acabou de clicar com o a da sequência do computador, se for diferente 'bye bye'
   
-  if sequenciaJogador.length === sequenciaComputador.length {
+  if (sequenciaJogador.length === sequenciaComputador.length) {
     return 'completa' // Essa condição diz compara se a quantidade que o jogador clicou é igual a do computador
   }
+  
   return 'correta' // Aqui, se tudo estiver na ordem correta
 }
 
 const jogoReducer = (estado, acao) => {
-  switch acao.tipo {
+  switch (acao.tipo) {
     case 'INICIAR_JOGO':
       return { ...criarEstadoInicial(), fimDeJogo: false }
 
@@ -66,12 +64,12 @@ const jogoReducer = (estado, acao) => {
 
     case 'JOGADA_JOGADOR':
       const novaSequenciaJogador = [...estado.sequenciaJogador, acao.payload.cor]
-      const resultado = verificarJogada(estado.sequenciaComputador, novaSequenciaJogador)
+      const resultado = verificarJogada(estado.sequenciaComputador, novaSequenciaJogador) // ALTERAÇÃO: agora passa dois arrays
 
-      if resultado === 'incorreta' {
+      if (resultado === 'incorreta') {
         return { ...estado, sequenciaJogador: novaSequenciaJogador, fimDeJogo: true, turnoDoJogador: false }
       }
-      if resultado === 'completa' {
+      if (resultado === 'completa') {
         return { ...estado, sequenciaJogador: novaSequenciaJogador, turnoDoJogador: false }
       }
       return { ...estado, sequenciaJogador: novaSequenciaJogador }
@@ -145,9 +143,9 @@ const loopTurnoJogador = async (estado) => {
     atualizarInterface(novoEstado)
     if (novoEstado.fimDeJogo) return
     if (novoEstado.turnoDoJogador) {
-        loopTurnoJogador(novoEstado)
+        await loopTurnoJogador(novoEstado) // ALTERAÇÃO: await para Promise resolver corretamente
     } else {
-        loopDoJogo(novoEstado)
+        await loopDoJogo(novoEstado) // ALTERAÇÃO: await para Promise resolver corretamente
     }
 };
 
@@ -163,13 +161,10 @@ const loopDoJogo = async (estado) => {
     atualizarInterface(estadoComputador)
     await tocarSequencia(estadoComputador.sequenciaComputador);
     const estadoJogador = jogoReducer(estadoComputador, { tipo: 'TURNO_JOGADOR' })
-    loopTurnoJogador(estadoJogador)
+    await loopTurnoJogador(estadoJogador) // ALTERAÇÃO: await para Promise resolver corretamente
 };
-//Altera o estado inicial para um estado de jogo iniciado
-//atualizarInterface(criarEstadoInicial()); monta o estado inicial, chamando criarEstadoinicial
-//botaoIniciar.addEventListener('click', () quando o botao de iniciar for clicado, essa funçao anonima ira ser executada
-//dentrp do click do botao, const estado inicial cria novamente um estado inicial chamando o jogoreduce, passando a ação
 
+//Altera o estado inicial para um estado de jogo iniciado
 const configuracaoInicial = () => {
     atualizarInterface(criarEstadoInicial());
     botaoIniciar.addEventListener('click', () => {
@@ -177,3 +172,6 @@ const configuracaoInicial = () => {
         loopDoJogo(estadoInicial);
     });
 };
+
+// CHAMADA NECESSÁRIA: inicia a configuração do jogo
+configuracaoInicial(); // ALTERAÇÃO: chamar a função para o jogo começar
