@@ -32,16 +32,19 @@ const proximoPassoDaSequencia = sequencia => { // Essa daqui é uma função arr
 // recebe o estado atual do jogo como parâmetro
 // verifica se a última jogada do jogador foi correta
 const verificarJogada = estado => {
-  const { sequenciaComputador, sequenciaJogador } = estado
-  const indiceUltimaJogada = sequenciaJogador.length - 1
+  const { sequenciaComputador, sequenciaJogador } = estado //  Essa parte aqui é basicamente pra pegar duas características do objeto estado pra evitar ter de repetir: estado.sequenciacomputador, por exemplo
+    
+  const indiceUltimaJogada = sequenciaJogador.length - 1 // Aqui, basicamente, temos a sequencia que o jogador já clicou aliado ao -1, pois os arrays começam em 0
 
   if sequenciaJogador[indiceUltimaJogada] !== sequenciaComputador[indiceUltimaJogada] {
     return 'incorreta'
   }
+    // Temos aqui o teste para o 'gameover'. Essa condição compara  a cor que o jogador acabou de clicar com o a da sequência do computador, se for diferente 'bye bye'
+  
   if sequenciaJogador.length === sequenciaComputador.length {
-    return 'completa'
+    return 'completa' // Essa condição diz compara se a quantidade que o jogador clicou é igual a do computador
   }
-  return 'correta'
+  return 'correta' // Aqui, se tudo estiver na ordem correta
 }
 
 const jogoReducer = (estado, acao) => {
