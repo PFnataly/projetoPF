@@ -1,23 +1,32 @@
-// =============================================
-// CÉREBRO FUNCIONAL (LÓGICA PURA)
-// =============================================
-//funçao que cria e retorna o estado inicial do jogo
-// retorno objeto com propriedades: nivel, array vazio para sequencia, array vazio para as jogadas
-//flag booleana 1, indica a vez do jogador, flag boolreana 2 zera e prepara o jogo
-// Cria e retorna o estado inicial do jogo.
+// Essa é a função que inicia o jogo. Sempre que chamamos, ela cria o novo jogo, completamento do zero
 const criarEstadoInicial = () => ({
-    nivel: 0,
-    sequenciaComputador: [],
-    sequenciaJogador: [],
-    turnoDoJogador: false,
-    fimDeJogo: true,
+    // Aqui, o que temos é um objeto, mas que ainda permanece dentro dos paradigmas funcionais, pois ele representa: 
+    //Funções puras (saída depende só da entrada, sem efeitos colaterais).
+    // Imutabilidade (não alterar valores diretamente, mas criar novos estados).
+    // Uso de composição de funções.
+    //Evitar estado global e mutável.
+    //Um objeto em si não é exclusivo da orientação a objetos (OO).
+    //OO se caracteriza por coisas como classes, herança, polimorfismo, métodos que carregam estado, etc.
+    //No seu caso, o objeto está sendo usado só como estrutura de dados (um agrupador de informações).
+    // A gente optou por essa abordagem, pois fica mais didático o código, mas poderiamos fazer da seguinte forma,  
+    //const [nivel, sequenciaComputador, sequenciaJogador, turnoDoJogador, fimDeJogo] = criarEstadoInicial()
+
+    nivel: 0, // Aqui, diz respeito ao nível. Ele começa no nível 0, pois ainda não houve rodadas
+    sequenciaComputador: [], // aqui é onde fica guardada a sequência que será gerada pelo computador
+    sequenciaJogador: [], //  Esse array guardará as cores jogadas pelo usuário
+    turnoDoJogador: false, // Essa parte é um booleano, ele basicamente irá dizer se é o turno do computador, ou se é a vez do jogador jogar
+    fimDeJogo: true, //  Esse é também um booleano que irá dizer se o jogo está parado ou em andamento
 });
 
 
-const proximoPassoDaSequencia = sequencia => {
-  const cores = ['green', 'red', 'yellow', 'blue']
-  const corAleatoria = cores[Math.floor(Math.random() * cores.length)]
+const proximoPassoDaSequencia = sequencia => { // Essa daqui é uma função arrow e seu objetivo é, basicamente, adicionar uma nova cor a sequência
+  const cores = ['green', 'red', 'yellow', 'blue'] // Aqui, a gente define as cores que poderão ser usadas
+  const corAleatoria = cores[Math.floor(Math.random() * cores.length)] // // Aqui a gente gera um numero entre 0 e 1 com o Math.random. Multiplicamos pelo valor da lista
+    // anterior, o cores.lenght - que é 4 -  será multiplicado pelo numero decimal, gerará um outro número e será arrendodado pelo Math.floor, que converterá para um inteiro
+    // de 0 a 3, pois ele sempre arredonda pra baixo
   return [...sequencia, corAleatoria]
+    // Aqui, por fim, temos o retorno dessa função, que basicamente cria a cópia do array original, sem alterá-lo, e adiciona uma nova cor. Ou seja, é gerado um novo
+    // array, que garante a imutabilidade
 }
 
 // recebe o estado atual do jogo como parâmetro
