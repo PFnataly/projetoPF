@@ -100,6 +100,7 @@ const atualizarInterface = (estado) => {
     }
 }
 
+// essa função aqui é pra esperar o jogador clicar em um botão
 // ela fica de olho nos cliques, quando o caba clica em uma cor
 // ela para de escutar os outros e devolve a cor que ele apertou
 const aguardarCliqueDoJogador = () => {
