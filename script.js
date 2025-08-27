@@ -1,6 +1,4 @@
-// Essa é a função que inicia o jogo. Sempre que chamamos, ela cria o novo jogo, completamento do zero
-// Agora o estado é representado como uma tupla (array posicional), e não mais como objeto.
-// A ordem é fixa: [nivel, sequenciaComputador, sequenciaJogador, turnoDoJogador, fimDeJogo]
+
 const criarEstadoInicial = () => [
     0,      // nivel  =  começa no nível 0, pois ainda não houve rodadas
     [],     // sequenciaComputador = aqui é onde fica guardada a sequência que será gerada pelo computador
@@ -49,7 +47,6 @@ const verificarJogada = (sequenciaComputador, sequenciaJogador) => {
 }
 
 
-// Dicionário de handlers, cada ação é uma função pura
 const handlers = {
   INICIAR_JOGO: () => [0, [], [], false, false],
 
@@ -81,7 +78,6 @@ const handlers = {
   }
 };
 
-// Redutor funcional: procura no dicionário a função correspondente
 const jogoReducer = (estado, acao) =>
   (handlers[acao.tipo] || ((s) => s))(estado, acao);
 
@@ -130,23 +126,19 @@ const atualizarInterface = (estado) => {
 // essa função aqui é pra esperar o jogador clicar em um botão
 // ela fica de olho nos cliques, quando o caba clica em uma cor
 // ela para de escutar os outros e devolve a cor que ele apertou
-// ✅ Versão 100% funcional com .map()
+
 const aguardarCliqueDoJogador = () => {
     return new Promise(resolve => {
         const botoes = Object.values(botoesDeCores);
 
-        // Definimos uma única vez a função que trata o clique
         const listener = (evento) => {
             const corClicada = evento.target.id;
 
-            // 🗺️ Usa .map() para iterar e REMOVER o listener de todos os botões
             botoes.map(botao => botao.removeEventListener('click', listener));
 
-            // Resolve a promessa, encerrando a espera
             resolve(corClicada);
         };
 
-        // 🗺️ Usa .map() para iterar e ADICIONAR o listener em cada botão
         botoes.map(botao => botao.addEventListener('click', listener));
     });
 };
@@ -169,7 +161,6 @@ const loopTurnoJogador = estado =>
     });
 
 const loopDoJogo = estado => {
-    // ... (o início da função continua igual) ...
 
     return esperar(1000)
         .then(() => jogoReducer(estado, { tipo: 'TURNO_COMPUTADOR' }))
@@ -179,7 +170,6 @@ const loopDoJogo = estado => {
         })
         .then(estadoComputador => jogoReducer(estadoComputador, { tipo: 'TURNO_JOGADOR' }))
         
-        // 👇 ETAPA ADICIONADA AQUI 👇
         .then(estadoJogador => {
             atualizarInterface(estadoJogador); // ATUALIZA A TELA PARA ATIVAR OS BOTÕES
             return estadoJogador; // Passa o estado adiante
@@ -187,7 +177,6 @@ const loopDoJogo = estado => {
         .then(loopTurnoJogador); // Agora sim começa o turno do jogador
 };
 
-//Altera o estado inicial para um estado de jogo iniciado
 const configuracaoInicial = () => {
     atualizarInterface(criarEstadoInicial());
     botaoIniciar.addEventListener('click', () => {
@@ -196,5 +185,4 @@ const configuracaoInicial = () => {
     });
 };
 
-// CHAMADA NECESSÁRIA: inicia a configuração do jogo
-configuracaoInicial(); // ALTERAÇÃO: chamar a função para o jogo começar
+configuracaoInicial();
