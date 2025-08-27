@@ -151,36 +151,37 @@ const atualizarInterface = (estado) => { //declara a função que vai receber o 
 // ela para de escutar os outros e devolve a cor que ele apertou
 
 const aguardarCliqueDoJogador = () => {
-    return new Promise(resolve => {
-        const botoes = Object.values(botoesDeCores);
+    return new Promise(resolve => { //só termina quando o jogador clicar em um botao
+        const botoes = Object.values(botoesDeCores); //Cria um array com todos os botoes de cores
 
-        const listener = (evento) => {
-            const corClicada = evento.target.id;
+        const listener = (evento) => { //função ouvinte, sera chamada quando o jogador clicar em um botao
+            const corClicada = evento.target.id; //pega o id do botao clicado (a cor escolhida pelo jogador)
 
-            botoes.map(botao => botao.removeEventListener('click', listener));
-
-            resolve(corClicada);
+            botoes.map(botao => botao.removeEventListener('click', listener)); //remove os eventos de cliques dos botoes, evitando cliques indesejaveis.
+            resolve(corClicada); //finaliza a promise, chamando resolve, enviando a cor clicada de volta para quem chamou a função.
         };
-
-        botoes.map(botao => botao.addEventListener('click', listener));
-    });
+         botoes.map(botao => botao.addEventListener('click', listener)); //adiciona a função de clique "listener" a todos os botoes.
+    }); 
 };
 
 
-
-
+//Espera o jogador clicar em uma cor, atualiza o estado do jogo com essa jogada.
+//Atualiza a interface
+//Decide se o jogo acabou, se continua no jogador ou passa para outro turno.
 const loopTurnoJogador = estado =>
-  aguardarCliqueDoJogador()
-    .then(corClicada => {
-      const novoEstado = jogoReducer(estado, { tipo: 'JOGADA_JOGADOR', payload: { cor: corClicada } });
-      atualizarInterface(novoEstado);
-      return novoEstado;
+  aguardarCliqueDoJogador() //Espera o clique do jogador
+    .then(corClicada => { //quando o jogador clicar, recebe a corclicada
+      const novoEstado = jogoReducer(estado, { tipo: 'JOGADA_JOGADOR', payload: { cor: corClicada } }); //Usa jogoreducer para atualizar o estado do jogo
+        //estado: estado atual do jogo
+        //tipo: Ação que diz qual cor o jogador escolheu
+      atualizarInterface(novoEstado); //atualiza a interface gráfica com o novo estado
+      return novoEstado; // retorna o novo estado
     })
-    .then(novoEstado => {
-      if (novoEstado[FIM_JOGO]) return;
-      return novoEstado[TURNO_JOG]
-        ? loopTurnoJogador(novoEstado)
-        : loopDoJogo(novoEstado);
+    .then(novoEstado => { //continua o fluxo recebendo o novo estado
+      if (novoEstado[FIM_JOGO]) return; //se o estado indicar que o jogo acabou (FIM_JOGO), ele para e não continua.
+      return novoEstado[TURNO_JOG] //caso contrario, verifica quem é o turno
+        ? loopTurnoJogador(novoEstado) //loopTurnojogador é chamada de volta de forma recursiva se ainda for o turno do jogador e ele joga novamente
+        : loopDoJogo(novoEstado); //se não for o turno do jogador loopDojogo é chamada (o turno da maquina).
     });
 
 const loopDoJogo = estado => {
