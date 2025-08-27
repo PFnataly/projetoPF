@@ -45,42 +45,50 @@ const verificarJogada = (sequenciaComputador, sequenciaJogador) => {
   
   return 'correta' // Aqui, se tudo estiver na ordem correta
 }
+
 //objeto handlers guarda as ações possiveis do jogo
 //cada chave é o nome de um evento(iniciar_jogo, turno_computador, turno_jogador,jogada_jogador)
 //cada valor associado é uma função que retorna que retorna o estado atualizado do jogo.
 
 const handlers = {
   INICIAR_JOGO: () => [0, [], [], false, false],
-//iniciar_jogo serve para resetar o estado atualizado e iniciar uma nova partida
+//°iniciar_jogo serve para resetar o estado atualizado e iniciar uma nova partida
 //começa o jogo no nivel 0, os arrays vazios se referem a sequencia do computador e e a sequencia do jogador
   //turno_jogador= false, não é a vez do jogador ainda
     //fimjogo = false, o jogo não acabou
+    
     TURNO_COMPUTADOR: ([nivel, seqComp, , , fimJogo]) => [
-    nivel + 1,
-    proximoPassoDaSequencia(seqComp),
-    [],
-    false,
-    fimJogo
-  ],
+        //recebe o estado atual do jogo
+        //retorna um novo estado
+        
+    nivel + 1, //aumenta o nivel porque o computador vai adicionar mais um passo
+        
+    proximoPassoDaSequencia(seqComp), //gera uma nova sequencia para o computador (add uma cor, por exemplo)
+    [], // zera a sequencia do jogador (ele ainda nao jogou)
+    false, // ainda nao é a vez do jogador
+    fimJogo //mantém o estado de fim de jogo como estava
+  ], //°Essa função representa a vez do computador, aumentando a dificuldade,
+    // adicionando um passo a sequencia e prepara para o jogador responder
 
   TURNO_JOGADOR: ([nivel, seqComp, seqJog, , fimJogo]) => [
-    nivel,
-    seqComp,
-    seqJog,
-    true,
-    fimJogo
-  ],
+    nivel, //mantem o mesmo nivel
+    seqComp, //mantem a mesma sequencia do computador
+    seqJog, //mantem a mesma sequencia do jogador
+    true, // agora é a vez do jogador
+    fimJogo //mantem o fim do jogo
+  ], //°Turno_jogador sinaliza que o computador terminou e o jogador deve repetir a sequencia.
 
   JOGADA_JOGADOR: ([nivel, seqComp, seqJog, , fimJogo], { payload }) => {
-    const novaSeqJog = [...seqJog, payload.cor];
-    const resultado = verificarJogada(seqComp, novaSeqJog);
+      //recebe o estado e um payload, o clique do jogador
+    const novaSeqJog = [...seqJog, payload.cor]; //cria uma nova sequencia, adicionando a cor escolhida pelo jogador
+    const resultado = verificarJogada(seqComp, novaSeqJog); //compara se a jogada está correta
 
-    return resultado === "incorreta"
+    return resultado === "incorreta" //se o jogador errou
       ? [nivel, seqComp, novaSeqJog, false, true]
-      : resultado === "completa"
-      ? [nivel, seqComp, novaSeqJog, false, fimJogo]
-      : [nivel, seqComp, novaSeqJog, true, fimJogo];
-  }
+      : resultado === "completa" //se ele acertou parcialmente
+      ? [nivel, seqComp, novaSeqJog, false, fimJogo] //se completou a sequencia, o jogo continua
+      : [nivel, seqComp, novaSeqJog, true, fimJogo]; //se o jogo acabou
+  }// Aqui o jogador faz uma jogada, e o codigo verifica se errou ou acertou.
 };
 
 const jogoReducer = (estado, acao) =>
