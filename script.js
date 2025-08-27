@@ -91,47 +91,57 @@ const handlers = {
   }// Aqui o jogador faz uma jogada, e o codigo verifica se errou ou acertou.
 };
 
-const jogoReducer = (estado, acao) =>
+const jogoReducer = (estado, acao) => //A função recebe, estado: array com, nivel,seqcomp, seqjog, turnojog, fimjogo.
+    //ação: objeto que tem tipo,payload
   (handlers[acao.tipo] || ((s) => s))(estado, acao);
-
-
+ //pega a função correspondente à ação que chegou
+// caso não exista uma função para esse ação.tipo, ele usa umaa °função fallback
+//(s)=>s , que retorna o estado do jeito que recebeu, evitando erro caso apareça uma ação inválida
+//decide qual transformação aplicar no estado do jogo com base na ação recebida
 
 // DOM
+//objeto de referencia das cores dos botoes
 const botoesDeCores = {
     green: document.getElementById('green'),
     red: document.getElementById('red'),
     yellow: document.getElementById('yellow'),
     blue: document.getElementById('blue')
 }
-
+//botao de iniciar e exibição de nivel
+//botao que inicia o jogo
 const botaoIniciar = document.getElementById('start-btn')
+//lugar no HTML onde mostra o numero do nivel atual
 const exibicaoNivel = document.getElementById('level')
 
-
+//Cria uma função que espera x milissegundos antes de continuar
+//Usa Promise e setTimeuot para controlar o tempo entre os efeitos de piscar os botões.
 const esperar = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-
+// Recebe uma cor e faz o botão piscar
 const piscarBotaoDeCor = async (cor) => {
-    const botao = botoesDeCores[cor]
-    botao.classList.add('lit')
-    await esperar(400)
-    botao.classList.remove('lit')
-    await esperar(200)
-}
+    const botao = botoesDeCores[cor] //pega o botao da cor escolhida
+    botao.classList.add('lit') // adiciona a classe css "lit", faz o botao acender
+    await esperar(400) //espera 400ms com o botao aceso
+    botao.classList.remove('lit') //apaga a luz
+    await esperar(200) //espera mais 200ms antes de terminar
+} //Isso cria um efeito visual de "piscar"
 
+//Essa função faz os botoes piscarem em sequencia, um após o outro.
+//sequencia é um array com as cores que devem piscar
 const tocarSequencia = (sequencia) => {
-    return sequencia.reduce((promessa, cor) => {
+    return sequencia.reduce((promessa, cor) => { //reduce é usado aqui para criar uma cadeia de °promises (garantindo que um botao pisque apos o outro).
         return promessa.then(() => piscarBotaoDeCor(cor));
-    }, Promise.resolve());
-};
+    }, Promise.resolve()); //ponto de partida da cadeia, promessa resolvida de imediato
+}; //Essa funçao toca a sequencia do jogo, que o jogador deve repetir
 
-const atualizarInterface = (estado) => {
-    const [nivel, , , turnoJog, fimJogo] = estado
-    exibicaoNivel.textContent = nivel
-    botaoIniciar.disabled = !fimJogo
-    const container = document.querySelector('.genius-board')
-    container.style.pointerEvents = turnoJog ? 'auto' : 'none'
-    if (fimJogo && nivel > 0) {
-        exibicaoNivel.textContent = `Fim! Nível ${nivel}`
+//Essa função lê o estado do jogo e atualiza elemntos do DOM
+const atualizarInterface = (estado) => { //declara a função que vai receber o estado do jogo
+    const [nivel, , , turnoJog, fimJogo] = estado //pega o elem que mostra o nivel do DOM
+    exibicaoNivel.textContent = nivel //desabilita/ativa o botao iniciar de acordo com o jogo
+    botaoIniciar.disabled = !fimJogo //seleciona o container do tabuleiro
+    const container = document.querySelector('.genius-board') //permite ou impede cliques dentro do container (se é a vez do jogador
+    container.style.pointerEvents = turnoJog ? 'auto' : 'none'  //se o jogo acabou e houve pelo menos um nivel, mostra a mensagem de fim
+    if (fimJogo && nivel > 0) { //verifica se o jogo acabou e se houve pelo menos um nivel
+        exibicaoNivel.textContent = `Fim! Nível ${nivel}` //substitui o texto de nivel por uma mensagem de fim
     }
 }
 
