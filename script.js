@@ -49,41 +49,41 @@ const verificarJogada = (sequenciaComputador, sequenciaJogador) => {
 }
 
 
-const jogoReducer = (estado, acao) => {
-  const [nivel, seqComp, seqJog, turnoJog, fimJogo] = estado
+// Dicionário de handlers, cada ação é uma função pura
+const handlers = {
+  INICIAR_JOGO: () => [0, [], [], false, false],
 
-  switch (acao.tipo) {
-    case 'INICIAR_JOGO':
-      return [0, [], [], false, false] // novo jogo iniciado
+  TURNO_COMPUTADOR: ([nivel, seqComp, , , fimJogo]) => [
+    nivel + 1,
+    proximoPassoDaSequencia(seqComp),
+    [],
+    false,
+    fimJogo
+  ],
 
-    case 'TURNO_COMPUTADOR':
-      return [
-        nivel + 1, 
-        proximoPassoDaSequencia(seqComp), 
-        [], 
-        false, 
-        fimJogo
-      ]
+  TURNO_JOGADOR: ([nivel, seqComp, seqJog, , fimJogo]) => [
+    nivel,
+    seqComp,
+    seqJog,
+    true,
+    fimJogo
+  ],
 
-    case 'TURNO_JOGADOR':
-      return [nivel, seqComp, seqJog, true, fimJogo]
+  JOGADA_JOGADOR: ([nivel, seqComp, seqJog, , fimJogo], { payload }) => {
+    const novaSeqJog = [...seqJog, payload.cor];
+    const resultado = verificarJogada(seqComp, novaSeqJog);
 
-    case 'JOGADA_JOGADOR':
-      const novaSequenciaJogador = [...seqJog, acao.payload.cor]
-      const resultado = verificarJogada(seqComp, novaSequenciaJogador) 
-
-      if (resultado === 'incorreta') {
-        return [nivel, seqComp, novaSequenciaJogador, false, true]
-      }
-      if (resultado === 'completa') {
-        return [nivel, seqComp, novaSequenciaJogador, false, fimJogo]
-      }
-      return [nivel, seqComp, novaSequenciaJogador, true, fimJogo]
-
-    default:
-      return estado
+    return resultado === "incorreta"
+      ? [nivel, seqComp, novaSeqJog, false, true]
+      : resultado === "completa"
+      ? [nivel, seqComp, novaSeqJog, false, fimJogo]
+      : [nivel, seqComp, novaSeqJog, true, fimJogo];
   }
-}
+};
+
+// Redutor funcional: procura no dicionário a função correspondente
+const jogoReducer = (estado, acao) =>
+  (handlers[acao.tipo] || ((s) => s))(estado, acao);
 
 
 
