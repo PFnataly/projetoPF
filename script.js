@@ -45,12 +45,17 @@ const verificarJogada = (sequenciaComputador, sequenciaJogador) => {
   
   return 'correta' // Aqui, se tudo estiver na ordem correta
 }
-
+//objeto handlers guarda as ações possiveis do jogo
+//cada chave é o nome de um evento(iniciar_jogo, turno_computador, turno_jogador,jogada_jogador)
+//cada valor associado é uma função que retorna que retorna o estado atualizado do jogo.
 
 const handlers = {
   INICIAR_JOGO: () => [0, [], [], false, false],
-
-  TURNO_COMPUTADOR: ([nivel, seqComp, , , fimJogo]) => [
+//iniciar_jogo serve para resetar o estado atualizado e iniciar uma nova partida
+//começa o jogo no nivel 0, os arrays vazios se referem a sequencia do computador e e a sequencia do jogador
+  //turno_jogador= false, não é a vez do jogador ainda
+    //fimjogo = false, o jogo não acabou
+    TURNO_COMPUTADOR: ([nivel, seqComp, , , fimJogo]) => [
     nivel + 1,
     proximoPassoDaSequencia(seqComp),
     [],
