@@ -184,29 +184,32 @@ const loopTurnoJogador = estado =>
         : loopDoJogo(novoEstado); //se não for o turno do jogador loopDojogo é chamada (o turno da maquina).
     });
 
+//o computador mostra a sequencia passa para o jogador e aguarda cliques
 const loopDoJogo = estado => {
 
-    return esperar(1000)
-        .then(() => jogoReducer(estado, { tipo: 'TURNO_COMPUTADOR' }))
-        .then(estadoComputador => {
-            atualizarInterface(estadoComputador);
-            return tocarSequencia(estadoComputador[SEQ_COMP]).then(() => estadoComputador);
-        })
-        .then(estadoComputador => jogoReducer(estadoComputador, { tipo: 'TURNO_JOGADOR' }))
+    return esperar(1000) //chama esperar pausando o fluxo por 1 segundo. cria um atras antes do computador jogar (efeito visual e logico)
+        .then(() => jogoReducer(estado, { tipo: 'TURNO_COMPUTADOR' })) //depois da espera atualiza o estado para indicar que agora é o turno do computador
+        .then(estadoComputador => { //recebe o estado do computador atualizado
+            atualizarInterface(estadoComputador); //atualiza a interface gráfica com esse estado
+            return tocarSequencia(estadoComputador[SEQ_COMP]).then(() => estadoComputador); //chama tocarsequencia, que mostra a sequencia de cores que o jogador deve repetir
+        }) //quando terminar a sequencia, retorna o mesmo estado do computador
+        .then(estadoComputador => jogoReducer(estadoComputador, { tipo: 'TURNO_JOGADOR' })) //atualiza o estado de novo, agora mudando para o turno do jogador
         
-        .then(estadoJogador => {
+        .then(estadoJogador => { //recebe o estado do jogador
             atualizarInterface(estadoJogador); // ATUALIZA A TELA PARA ATIVAR OS BOTÕES
             return estadoJogador; // Passa o estado adiante
         })
         .then(loopTurnoJogador); // Agora sim começa o turno do jogador
 };
-
+//prepara o jogo antes de começar
 const configuracaoInicial = () => {
-    atualizarInterface(criarEstadoInicial());
-    botaoIniciar.addEventListener('click', () => {
-        const estadoInicial = jogoReducer(criarEstadoInicial(), { tipo: 'INICIAR_JOGO' });
-        loopDoJogo(estadoInicial);
+    atualizarInterface(criarEstadoInicial()); //cria o estado inicial e atualiza a interface para mostrar esse estado
+    botaoIniciar.addEventListener('click', () => { // adiciona um evento de clique no botao iniciar
+        const estadoInicial = jogoReducer(criarEstadoInicial(), { tipo: 'INICIAR_JOGO' }); //quando clicado, cria um novo estado inicial, só que usando jogoReducer
+        // com a ação INICIAR_JOGO ( ou seja, o jogo começa).
+        loopDoJogo(estadoInicial); //começa o ciclo do jogo
     });
 };
 
-configuracaoInicial();
+configuracaoInicial();// assim que o script carrega a função configuraçãoInicial é executada
+//Assim a interface inicial do jogo é configurada automaticamente
