@@ -155,7 +155,7 @@ const atualizarInterface = (estado) => { //declara a função que vai receber o 
     const container = document.querySelector('.genius-board') //permite ou impede cliques dentro do container (se é a vez do jogador
     container.style.pointerEvents = turnoJog ? 'auto' : 'none'  //se o jogo acabou e houve pelo menos um nivel, mostra a mensagem de fim
     if (fimJogo && nivel > 0) { //verifica se o jogo acabou e se houve pelo menos um nivel
-        exibicaoNivel.textContent = Fim! Nível ${nivel} //substitui o texto de nivel por uma mensagem de fim
+        exibicaoNivel.textContent = `Fim! Nível ${nivel}` //substitui o texto de nivel por uma mensagem de fim
     }
 }
 
