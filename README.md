@@ -1,0 +1,1 @@
+https://jogogeniuss.netlify.app/
